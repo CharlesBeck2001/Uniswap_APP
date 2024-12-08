@@ -8,7 +8,7 @@ Created on Sat Dec  7 12:55:21 2024
 import os
 import streamlit as st
 import pandas as pd
-import google.cloud
+from google.cloud import bigquery
 import numpy as np
 import tempfile
 
