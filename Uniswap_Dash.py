@@ -182,7 +182,13 @@ for pair in selected_pairs:
             cvf_combined_data = pd.concat([cvf_combined_data, total_df], ignore_index=True)
 
 
+
+
 if not cvf_combined_data.empty:
+    
+    st.write("Maximum cumulative percentage for each pair:")
+    st.write(cvf_combined_data.groupby('pair')['cumulative_percentage'].max())
+
     st.write("CVF Curves for Selected Pairs:")
 
     # Initialize an empty list to hold the sampled data for each pair
