@@ -73,7 +73,7 @@ def load_data():
         cumulative_volume / SUM(total_volume) OVER () AS cumulative_percentage
     FROM cumulative_data
     ORDER BY log_volume
-    LIMIT 50000;
+    LIMIT 1000000;
     """
 
     query_job = client.query(query)
