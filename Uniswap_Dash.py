@@ -188,7 +188,8 @@ if 'Total' in selected_pairs:
 else:
     filtered_pairs = df[df['pair'].isin(selected_pairs)]
 
-
+st.write("Filtered pairs after selection:", filtered_pairs.shape)
+st.dataframe(filtered_pairs.head())  # Check the first few rows after filtering
 
 #for p in filtered_pairs['pair'].unique():
     
