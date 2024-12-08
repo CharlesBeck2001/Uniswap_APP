@@ -33,74 +33,29 @@ client = bigquery.Client.from_service_account_info(service_account_info)
 
 # Continue with your code as usual
 st.write("BigQuery client initialized successfully.")
-#def load_data():
-#    query = """
-#    SELECT *
-#    FROM `tristerotrading.uniswap.v3_trades`
-#    WHERE buy IN ('USDC', 'USDT')
-#       OR sell IN ('USDC', 'USDT')
-#    LIMIT 5000000;
-
-#    """
-
-#    query_job = client.query(query)
-
-#    results = query_job.result()
-
-#    df = query_job.to_dataframe()
-
- #   df['volume'] = df.apply(
- #       lambda row: row['quantity_buy'] if 'USDT' in row['buy'] or 'USDC' in row['buy'] else (
- #                   row['quantity_sell'] if 'USDT' in row['sell'] or 'USDC' in row['sell'] else 0),
- #       axis=1
- #   )
-
-  #  return df
-@st.cache_data(show_spinner=False)  # Cache the individual chunk fetches
-def fetch_chunk(offset, chunk_size):
-    query = f"""
+def load_data():
+    query = """
     SELECT *
     FROM `tristerotrading.uniswap.v3_trades`
     WHERE buy IN ('USDC', 'USDT')
        OR sell IN ('USDC', 'USDT')
-    LIMIT {chunk_size} OFFSET {offset};
+    LIMIT 100000;
+
     """
+
     query_job = client.query(query)
-    return query_job.to_dataframe()
 
-# Main function to load data
-@st.cache_data(show_spinner=True)  # Cache the combined result
-def load_data():
-    chunk_size = 10000
-    total_rows = 5000000  # Example total number of rows
-    num_chunks = total_rows // chunk_size
+    results = query_job.result()
 
-    all_data = []  # List to store all fetched chunks
-    progress_bar = st.progress(0)  # Initialize progress bar
+    df = query_job.to_dataframe()
 
-    for chunk_num in range(num_chunks):
-        offset = chunk_num * chunk_size
-
-        # Fetch the current chunk
-        chunk_df = fetch_chunk(offset, chunk_size)
-        all_data.append(chunk_df)
-
-        # Update the progress bar
-        progress_bar.progress((chunk_num + 1) / num_chunks)
-
-        # Allow Streamlit to update
-        time.sleep(0.1)
-
-    # Combine all chunks into a single DataFrame
-    df = pd.concat(all_data, ignore_index=True)
-
-    # Add 'volume' column
     df['volume'] = df.apply(
         lambda row: row['quantity_buy'] if 'USDT' in row['buy'] or 'USDC' in row['buy'] else (
                     row['quantity_sell'] if 'USDT' in row['sell'] or 'USDC' in row['sell'] else 0),
         axis=1
     )
-    return df
+
+  return df
 
 # Load the data
 data = load_data()
