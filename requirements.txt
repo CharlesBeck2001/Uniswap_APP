@@ -4,4 +4,3 @@ streamlit
 pandas
 google.cloud
 numpy
-tempfile
