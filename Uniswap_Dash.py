@@ -19,9 +19,6 @@ st.set_page_config(
 # Access the private key from Streamlit secrets
 private_key = st.secrets["gcp"]["private_key"]
 
-# Convert private key string to dictionary
-private_key_dict = json.loads(private_key)
-
 # Initialize BigQuery client using the provided private key string
 client = bigquery.Client.from_service_account_info({
     "private_key": private_key
