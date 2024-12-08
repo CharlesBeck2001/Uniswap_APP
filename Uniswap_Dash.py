@@ -72,7 +72,7 @@ df['pair'] = df.apply(lambda row: f"{row['buy']}-{row['sell']}", axis=1)
 
 #pairs = result_df['pair'].unique()
 
-pairs = list(result_df['pair'].unique()) + ['Total']
+pairs = list(df['pair'].unique()) + ['Total']
 
 if not len(pairs):
     
