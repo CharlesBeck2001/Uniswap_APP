@@ -32,31 +32,77 @@ client = bigquery.Client.from_service_account_info(service_account_info)
 
 # Continue with your code as usual
 st.write("BigQuery client initialized successfully.")
+#def load_data():
+#    query = """
+#    SELECT *
+#    FROM `tristerotrading.uniswap.v3_trades`
+#    WHERE buy IN ('USDC', 'USDT')
+#       OR sell IN ('USDC', 'USDT')
+#    LIMIT 5000000;
+
+#    """
+
+#    query_job = client.query(query)
+
+#    results = query_job.result()
+
+#    df = query_job.to_dataframe()
+
+ #   df['volume'] = df.apply(
+ #       lambda row: row['quantity_buy'] if 'USDT' in row['buy'] or 'USDC' in row['buy'] else (
+ #                   row['quantity_sell'] if 'USDT' in row['sell'] or 'USDC' in row['sell'] else 0),
+ #       axis=1
+ #   )
+
+  #  return df
 @st.cache
 def load_data():
-    query = """
-    SELECT *
-    FROM `tristerotrading.uniswap.v3_trades`
-    WHERE buy IN ('USDC', 'USDT')
-       OR sell IN ('USDC', 'USDT')
-    LIMIT 5000000;
-
-    """
-
-    query_job = client.query(query)
-
-    results = query_job.result()
-
-    df = query_job.to_dataframe()
-
+    # Set the number of rows per chunk
+    chunk_size = 10000
+    
+    # Initialize a list to store chunks of data
+    all_data = []
+    
+    # Calculate how many chunks we need (total rows / chunk size)
+    total_rows = 5000000  # You can change this to the actual number of rows you expect
+    num_chunks = total_rows // chunk_size
+    
+    # Create a progress bar
+    progress_bar = st.progress(0)
+    
+    # Loop through and query in chunks
+    for chunk_num in range(num_chunks):
+        offset = chunk_num * chunk_size
+        query = f"""
+        SELECT *
+        FROM `tristerotrading.uniswap.v3_trades`
+        WHERE buy IN ('USDC', 'USDT')
+           OR sell IN ('USDC', 'USDT')
+        LIMIT {chunk_size} OFFSET {offset};
+        """
+        
+        # Execute the query
+        query_job = client.query(query)
+        chunk_df = query_job.to_dataframe()
+        
+        # Append the chunk to the list of all data
+        all_data.append(chunk_df)
+        
+        # Update the progress bar
+        progress_bar.progress((chunk_num + 1) / num_chunks)
+    
+    # Concatenate all chunks into a single DataFrame
+    df = pd.concat(all_data, ignore_index=True)
+    
+    # Add the 'volume' column as before
     df['volume'] = df.apply(
         lambda row: row['quantity_buy'] if 'USDT' in row['buy'] or 'USDC' in row['buy'] else (
                     row['quantity_sell'] if 'USDT' in row['sell'] or 'USDC' in row['sell'] else 0),
         axis=1
     )
 
+    # Return the full DataFrame
     return df
-
 
 df = load_data()
 # Create a new DataFrame to store the trades for each pair
