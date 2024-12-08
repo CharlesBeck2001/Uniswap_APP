@@ -59,13 +59,26 @@ def load_data(pair=None):
       SELECT
         buy,
         sell,
-        LEAST(quantity_buy, quantity_sell) AS trade_volume,
-        SUM(LEAST(quantity_buy, quantity_sell)) OVER (ORDER BY LEAST(quantity_buy, quantity_sell)) AS cumulative_volume,
-        SUM(LEAST(quantity_buy, quantity_sell)) OVER () AS total_volume
+        -- Correct trade volume: whichever side involves USDC or USDT
+        CASE
+          WHEN buy IN ('USDC', 'USDT') THEN quantity_buy
+          WHEN sell IN ('USDC', 'USDT') THEN quantity_sell
+        END AS trade_volume,
+        -- Cumulative volume using the correct trade volume
+        SUM(CASE
+          WHEN buy IN ('USDC', 'USDT') THEN quantity_buy
+          WHEN sell IN ('USDC', 'USDT') THEN quantity_sell
+        END) OVER (ORDER BY trade_volume) AS cumulative_volume,
+        -- Total volume for the pair
+        SUM(CASE
+          WHEN buy IN ('USDC', 'USDT') THEN quantity_buy
+          WHEN sell IN ('USDC', 'USDT') THEN quantity_sell
+        END) OVER () AS total_volume
       FROM
         `tristerotrading.uniswap.v3_trades`
       WHERE
         (buy IN ('USDC', 'USDT') OR sell IN ('USDC', 'USDT'))
+        {f"AND CONCAT(buy, '-', sell) = '{pair}'" if pair else ""}
     )
     SELECT 
       buy,
@@ -75,7 +88,6 @@ def load_data(pair=None):
       total_volume,
       cumulative_volume / total_volume AS cumulative_percentage
     FROM trades_with_cumulative
-    {f"WHERE CONCAT(buy, '-', sell) = '{pair}'" if pair else ""}
     ORDER BY trade_volume;
     """
 
