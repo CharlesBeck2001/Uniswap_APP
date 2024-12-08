@@ -63,16 +63,24 @@ def load_data(pair=None):
         CASE
           WHEN buy IN ('USDC', 'USDT') THEN quantity_buy
           WHEN sell IN ('USDC', 'USDT') THEN quantity_sell
+          ELSE 0  -- Adding the ELSE clause to handle cases where neither side is USDC/USDT
         END AS trade_volume,
         -- Cumulative volume using the correct trade volume
         SUM(CASE
           WHEN buy IN ('USDC', 'USDT') THEN quantity_buy
           WHEN sell IN ('USDC', 'USDT') THEN quantity_sell
-        END) OVER (ORDER BY trade_volume) AS cumulative_volume,
+          ELSE 0
+        END) OVER (ORDER BY
+          CASE
+            WHEN buy IN ('USDC', 'USDT') THEN quantity_buy
+            WHEN sell IN ('USDC', 'USDT') THEN quantity_sell
+            ELSE 0
+          END) AS cumulative_volume,
         -- Total volume for the pair
         SUM(CASE
           WHEN buy IN ('USDC', 'USDT') THEN quantity_buy
           WHEN sell IN ('USDC', 'USDT') THEN quantity_sell
+          ELSE 0
         END) OVER () AS total_volume
       FROM
         `tristerotrading.uniswap.v3_trades`
