@@ -197,7 +197,7 @@ else:
  #   np.array(result_df.loc[result_df['pair'] ==p]['volume'].tolist())
  
 # Log-scale adjustment for x-axis
-cvf_data['log_volume'] = np.log10(cvf_data['volume'])
+#cvf_data['log_volume'] = np.log10(cvf_data['volume'])
 
 # Plot with Streamlit
 st.line_chart(data=filtered_pairs, x='log_volume', y='cumulative_percentage', color='pair')
