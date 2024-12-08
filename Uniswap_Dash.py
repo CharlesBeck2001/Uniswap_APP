@@ -118,6 +118,7 @@ def load_data(pair=None):
 #df = load_data()
 #data = df
 pairs = load_unique_pairs()
+pairs.append('Total')
 '''
 Uniswap Data Dashboard
 
