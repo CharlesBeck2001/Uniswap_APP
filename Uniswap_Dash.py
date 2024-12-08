@@ -200,7 +200,7 @@ if not cvf_combined_data.empty:
         pair_data = pair_data.sort_values(by='log_volume')
 
         # Select 1000 evenly spaced points
-        num_points = 1000
+        num_points = 5000
         if len(pair_data) > num_points:
             indices = np.linspace(0, len(pair_data) - 1, num_points, dtype=int)
             sampled_pair_data = pair_data.iloc[indices]
