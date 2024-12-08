@@ -91,7 +91,7 @@ def load_data():
         
         # Update the progress bar
         progress_bar.progress((chunk_num + 1) / num_chunks)
-        time.sleep(1)
+        time.sleep(0.1)
     
     # Concatenate all chunks into a single DataFrame
     df = pd.concat(all_data, ignore_index=True)
