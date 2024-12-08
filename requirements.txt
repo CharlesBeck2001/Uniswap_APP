@@ -1,3 +1,8 @@
+os
 matplotlib
 pandas
 streamlit
+pandas
+google.cloud
+numpy
+tempfile
