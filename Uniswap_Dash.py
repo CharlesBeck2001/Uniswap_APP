@@ -132,22 +132,52 @@ selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['
 ''
 ''
 
-cvf_data = pd.DataFrame() 
+cvf_combined_data = pd.DataFrame()
 
+# Fetch and combine data for the selected pairs
 for pair in selected_pairs:
-    df = load_data(pair)
-    if not df.empty:
-        # Calculate the CVF curve
-        df['cumulative_percentage'] = df['cumulative_volume'] / df['total_volume']
-        df['log_volume'] = np.log10(df['trade_volume'])
+    if pair != 'Total':  # Exclude 'Total' from the loop
+        df = load_data(pair)
+        if not df.empty:
+            # Calculate the CVF curve
+            df['cumulative_percentage'] = df['cumulative_volume'] / df['total_volume']
+            df['log_volume'] = np.log10(df['trade_volume'])
 
-        # Plot the CVF curve for this pair
-        st.line_chart(
-            df[['log_volume', 'cumulative_percentage']].set_index('log_volume'),
-            use_container_width=True
-        )
+            # Add a new column to label the pair
+            df['pair'] = pair
+            
+            # Append the data to the combined DataFrame
+            cvf_combined_data = pd.concat([cvf_combined_data, df], ignore_index=True)
     else:
-        st.warning(f"No data found for pair {pair}.")
+        # If 'Total' is selected, calculate the CVF for all pairs combined
+        total_df = load_data()  # Load all data for the total volume
+        if not total_df.empty:
+            # Calculate the CVF curve for 'Total'
+            total_df['cumulative_percentage'] = total_df['cumulative_volume'] / total_df['total_volume']
+            total_df['log_volume'] = np.log10(total_df['trade_volume'])
+
+            # Add a new column to label the pair as 'Total'
+            total_df['pair'] = 'Total'
+
+            # Append the 'Total' data to the combined DataFrame
+            cvf_combined_data = pd.concat([cvf_combined_data, total_df], ignore_index=True)
+
+# Plot all selected CVF curves on the same graph
+if not cvf_combined_data.empty:
+    st.write("CVF Curves for Selected Pairs:")
+
+    # Pivot the data to have pairs as columns and log_volume as index
+    chart_data = cvf_combined_data.pivot_table(
+        index='log_volume',
+        columns='pair',
+        values='cumulative_percentage',
+        aggfunc='max'  # To handle duplicate log_volume values
+    )
+
+    # Plot the combined CVF data
+    st.line_chart(chart_data, use_container_width=True)
+else:
+    st.warning("No data available to plot.")
 #st.write("Data loaded:", df.shape)
 #st.dataframe(df.head())
 
@@ -223,19 +253,7 @@ for pair in selected_pairs:
  
 # Log-scale adjustment for x-axis
 #cvf_data['log_volume'] = np.log10(cvf_data['volume'])
-if 'Total' in selected_pairs:
-    df_total = load_data()
-    if not df_total.empty:
-        df_total['cumulative_percentage'] = df_total['cumulative_volume'] / df_total['total_volume']
-        df_total['log_volume'] = np.log10(df_total['trade_volume'])
 
-        # Plot the total CVF curve
-        st.line_chart(
-            df_total[['log_volume', 'cumulative_percentage']].set_index('log_volume'),
-            use_container_width=True
-        )
-    else:
-        st.warning("No total data available.")
 
 # Plot with Streamlit
 #st.line_chart(data=filtered_pairs, x='log_volume', y='cumulative_percentage', color='pair')
