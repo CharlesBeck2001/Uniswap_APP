@@ -61,6 +61,7 @@ def load_data():
 
 # Load the data
 df = load_data()
+data = df
 
 if not data.empty:
     st.write("Data loading complete!")
