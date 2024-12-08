@@ -57,7 +57,7 @@ def load_data():
         axis=1
     )
 
-  return df
+    return df
 
 # Load the data
 data = load_data()
