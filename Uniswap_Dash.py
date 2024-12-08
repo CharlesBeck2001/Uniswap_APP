@@ -205,6 +205,23 @@ if not cvf_combined_data.empty:
         # Sort by 'log_volume' to ensure it's in the correct order
         pair_data = pair_data.sort_values(by='log_volume')
 
+         # Normalize log_volume to start at 0
+        min_log_volume = pair_data['log_volume'].min()
+        pair_data['log_volume'] -= min_log_volume
+
+        # Ensure there's a point at log_volume = 0
+        if 0 not in pair_data['log_volume'].values:
+            # Add a row with log_volume = 0
+            interpolated_row = {
+                'log_volume': 0,
+                'cumulative_percentage': 0,  # Start cumulative percentage at 0
+                'cumulative_volume': 0,      # Start cumulative volume at 0
+                'total_volume': pair_data['total_volume'].iloc[0],  # Keep total volume consistent
+                'pair': pair
+            }
+            pair_data = pd.concat([pd.DataFrame([interpolated_row]), pair_data], ignore_index=True)
+            pair_data = pair_data.sort_values(by='log_volume')
+        
         # Select 1000 evenly spaced points
         num_points = 5000
         if len(pair_data) > num_points:
