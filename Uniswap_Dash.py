@@ -16,12 +16,11 @@ st.set_page_config(
     page_title='Uniswap Trades Dashboard'
     )
 
-private_key_json = os.getenv("GCP_PRIVATE_KEY")
-#key_path = '/Users/charlesbeck/Tristero Key/tristerotrading-92ef128610de.json'
+# Access the private key from Streamlit secrets
+private_key = st.secrets["gcp"]["private_key"]
 
-
-# Parse the JSON string into a dictionary
-private_key_dict = json.loads(private_key_json)
+# Convert private key string to dictionary
+private_key_dict = json.loads(private_key)
 
 # Initialize BigQuery client using the provided private key
 client = bigquery.Client.from_service_account_info(private_key_dict)
