@@ -33,6 +33,8 @@ client = bigquery.Client.from_service_account_info(service_account_info)
 
 # Continue with your code as usual
 st.write("BigQuery client initialized successfully.")
+
+@st.cache_data
 def load_data():
     query = """
     SELECT *
