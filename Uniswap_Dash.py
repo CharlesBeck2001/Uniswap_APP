@@ -67,7 +67,7 @@ def load_data():
     # Calculate how many chunks we need (total rows / chunk size)
     total_rows = 50000  # You can change this to the actual number of rows you expect
     num_chunks = total_rows // chunk_size
-    
+    #status_text = st.empty()
     # Create a progress bar
     progress_bar = st.progress(0)
     
@@ -91,7 +91,7 @@ def load_data():
         
         # Update the progress bar
         progress_bar.progress((chunk_num + 1) / num_chunks)
-        time.sleep(0.1)
+        time.sleep(1)
     
     # Concatenate all chunks into a single DataFrame
     df = pd.concat(all_data, ignore_index=True)
