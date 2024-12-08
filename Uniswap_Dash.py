@@ -214,15 +214,15 @@ if not cvf_combined_data.empty:
     sampled_combined_data = pd.concat(sampled_dfs, ignore_index=True)
 
     # Pivot the data to have 'log_volume' as the index and pairs as columns
-    chart_data = sampled_combined_data.pivot_table(
-        index='log_volume',
-        columns='pair',
-        values='cumulative_percentage',
-        aggfunc='max'  # To handle duplicate log_volume values
-    )
+    #chart_data = sampled_combined_data.pivot_table(
+    #    index='log_volume',
+    #    columns='pair',
+    #    values='cumulative_percentage',
+    #    aggfunc='max'  # To handle duplicate log_volume values
+    #)
 
     # Plot the combined CVF data with 1000 evenly spaced points for each pair
-    st.line_chart(chart_data, use_container_width=True)
+    st.line_chart(sampled_combined_data, x='log_volume', y='cumulative_percentage', color='pair')
 else:
     st.warning("No data available to plot.")
 # Plot all selected CVF curves on the same graph
