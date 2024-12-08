@@ -19,17 +19,15 @@ st.set_page_config(
 private_key_json = os.getenv("GCP_PRIVATE_KEY")
 #key_path = '/Users/charlesbeck/Tristero Key/tristerotrading-92ef128610de.json'
 
-if private_key_json is None:
-    st.error("Private key is not available in the environment variables")
-else:
-    # Parse the JSON string into a dictionary
-    private_key_dict = json.loads(private_key_json)
 
-    # Initialize BigQuery client using the provided private key
-    client = bigquery.Client.from_service_account_info(private_key_dict)
+# Parse the JSON string into a dictionary
+private_key_dict = json.loads(private_key_json)
 
-    # Continue with your code as usual
-    st.write("BigQuery client initialized successfully.")
+# Initialize BigQuery client using the provided private key
+client = bigquery.Client.from_service_account_info(private_key_dict)
+
+# Continue with your code as usual
+st.write("BigQuery client initialized successfully.")
 
 
 query = """
