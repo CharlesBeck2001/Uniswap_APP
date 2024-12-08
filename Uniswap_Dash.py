@@ -57,6 +57,8 @@ def load_data():
 
     return df
 
+
+df = load_data()
 # Create a new DataFrame to store the trades for each pair
 trades_by_pair = []
 
