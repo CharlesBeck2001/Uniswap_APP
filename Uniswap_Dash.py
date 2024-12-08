@@ -138,7 +138,6 @@ def load_data(pair=None):
 #df = load_data()
 #data = df
 pairs = load_unique_pairs()
-pairs.append('Total')
 '''
 Uniswap Data Dashboard
 
@@ -146,7 +145,7 @@ Browse Uniswap data by pair from a large collection of data.
 
 '''
 
-selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['USDC-ENS', 'USDT-UNI', 'USDT-USDC', 'Total'])
+selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['USDC-ENS', 'USDT-UNI', 'USDT-USDC'])
 
 ''
 ''
