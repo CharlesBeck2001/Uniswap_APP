@@ -165,27 +165,43 @@ for pair in selected_pairs:
 if not cvf_combined_data.empty:
     st.write("CVF Curves for Selected Pairs:")
 
-    # Sort the data by 'log_volume' to ensure it's ordered
-    cvf_combined_data = cvf_combined_data.sort_values(by='log_volume')
+    # Initialize an empty list to hold the sampled data for each pair
+    sampled_dfs = []
 
-    # Select 1000 evenly spaced points based on 'log_volume'
-    num_points = 1000
+    # Get the unique pairs that the user has selected
+    selected_pairs = cvf_combined_data['pair'].unique()
 
-    # Generate 1000 evenly spaced indices in the range of the DataFrame
-    indices = np.linspace(0, len(cvf_combined_data) - 1, num_points, dtype=int)
+    # Loop over the selected pairs and sample 1000 points for each
+    for pair in selected_pairs:
+        # Filter the data for the current pair
+        pair_data = cvf_combined_data[cvf_combined_data['pair'] == pair]
 
-    # Sample the data using the generated indices
-    sampled_data = cvf_combined_data.iloc[indices]
+        # Sort by 'log_volume' to ensure it's in the correct order
+        pair_data = pair_data.sort_values(by='log_volume')
 
-    # Pivot the data to have pairs as columns and 'log_volume' as index
-    chart_data = sampled_data.pivot_table(
+        # Select 1000 evenly spaced points
+        num_points = 1000
+        if len(pair_data) > num_points:
+            indices = np.linspace(0, len(pair_data) - 1, num_points, dtype=int)
+            sampled_pair_data = pair_data.iloc[indices]
+        else:
+            sampled_pair_data = pair_data  # If there are fewer than 1000 points, use them all
+
+        # Append the sampled data for the pair to the list
+        sampled_dfs.append(sampled_pair_data)
+
+    # Combine all the sampled data for each pair into one DataFrame
+    sampled_combined_data = pd.concat(sampled_dfs, ignore_index=True)
+
+    # Pivot the data to have 'log_volume' as the index and pairs as columns
+    chart_data = sampled_combined_data.pivot_table(
         index='log_volume',
         columns='pair',
         values='cumulative_percentage',
         aggfunc='max'  # To handle duplicate log_volume values
     )
 
-    # Plot the combined CVF data with 1000 evenly spaced points
+    # Plot the combined CVF data with 1000 evenly spaced points for each pair
     st.line_chart(chart_data, use_container_width=True)
 else:
     st.warning("No data available to plot.")
