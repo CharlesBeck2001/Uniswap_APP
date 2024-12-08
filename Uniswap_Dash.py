@@ -190,8 +190,8 @@ else:
 
 st.write("Filtered pairs after selection:", filtered_pairs.shape)
 st.dataframe(filtered_pairs.head())  # Check the first few rows after filtering
-
-#for p in filtered_pairs['pair'].unique():
+st.write("Columns in filtered pairs:", filtered_pairs.columns.tolist())
+#for p in filtst.write("Columns in filtered pairs:", filtered_pairs.columns.tolist())ered_pairs['pair'].unique():
     
     
  #   np.array(result_df.loc[result_df['pair'] ==p]['volume'].tolist())
