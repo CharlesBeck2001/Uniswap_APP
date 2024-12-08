@@ -35,52 +35,57 @@ client = bigquery.Client.from_service_account_info(service_account_info)
 st.write("BigQuery client initialized successfully.")
 
 @st.cache_data
-def load_data():
+def load_unique_pairs():
     query = """
-    WITH aggregated_data AS (
-        SELECT
-            buy,
-            sell,
-            SUM(quantity_buy) AS total_buy_volume,
-            SUM(quantity_sell) AS total_sell_volume,
-            COUNT(*) AS trade_count
-        FROM `tristerotrading.uniswap.v3_trades`
-        WHERE buy IN ('USDC', 'USDT')
-           OR sell IN ('USDC', 'USDT')
-        GROUP BY buy, sell
-    ),
-    cumulative_data AS (
-        SELECT
-            buy,
-            sell,
-            total_buy_volume,
-            total_sell_volume,
-            trade_count,
-            (total_buy_volume + total_sell_volume) AS total_volume,
-            LOG10(total_buy_volume + total_sell_volume) AS log_volume,
-            SUM(total_buy_volume + total_sell_volume) OVER (ORDER BY (total_buy_volume + total_sell_volume)) AS cumulative_volume
-        FROM aggregated_data
-    )
-    SELECT
-        buy,
-        sell,
-        total_buy_volume,
-        total_sell_volume,
-        trade_count,
-        total_volume,
-        log_volume,
-        cumulative_volume,
-        cumulative_volume / SUM(total_volume) OVER () AS cumulative_percentage
-    FROM cumulative_data
-    ORDER BY log_volume
-    LIMIT 1000000;
+    SELECT DISTINCT CONCAT(buy, '-', sell) AS pair
+    FROM `tristerotrading.uniswap.v3_trades`
+    WHERE buy IN ('USDC', 'USDT')
+       OR sell IN ('USDC', 'USDT')
     """
-
+    
     query_job = client.query(query)
     results = query_job.result()
 
-    # Load the data into a DataFrame
+    # Convert query results to a DataFrame
     df = query_job.to_dataframe()
+    return df['pair'].tolist()
+
+
+@st.cache_data
+def load_data(pair=None):
+    # SQL query with dynamic pair filtering
+    query = f"""
+    WITH trades_with_cumulative AS (
+      SELECT
+        buy,
+        sell,
+        LEAST(quantity_buy, quantity_sell) AS trade_volume,
+        SUM(LEAST(quantity_buy, quantity_sell)) OVER (ORDER BY LEAST(quantity_buy, quantity_sell)) AS cumulative_volume,
+        SUM(LEAST(quantity_buy, quantity_sell)) OVER () AS total_volume
+      FROM
+        `tristerotrading.uniswap.v3_trades`
+      WHERE
+        (buy IN ('USDC', 'USDT') OR sell IN ('USDC', 'USDT'))
+    )
+    SELECT 
+      buy,
+      sell,
+      trade_volume,
+      cumulative_volume,
+      total_volume,
+      cumulative_volume / total_volume AS cumulative_percentage
+    FROM trades_with_cumulative
+    {f"WHERE CONCAT(buy, '-', sell) = '{pair}'" if pair else ""}
+    ORDER BY trade_volume;
+    """
+
+    # Execute the query
+    query_job = client.query(query)
+    results = query_job.result()
+
+    # Convert the query result to a DataFrame
+    df = query_job.to_dataframe()
+
     return df
 
 
@@ -108,16 +113,46 @@ def load_data():
 
  #   return df
 
-# Load the data
-df = load_data()
-data = df
 
-st.write("Data loaded:", df.shape)  # Outputs the dimensions of the DataFrame
-st.dataframe(df.head())
+# Load the data
+#df = load_data()
+#data = df
+pairs = load_unique_pairs()
+'''
+Uniswap Data Dashboard
+
+Browse Uniswap data by pair from a large collection of data.
+
+'''
+
+selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['USDC-ENS', 'USDT-UNI', 'USDT-USDC', 'Total'])
+
+''
+''
+''
+
+cvf_data = pd.DataFrame() 
+
+for pair in selected_pairs:
+    df = load_data(pair)
+    if not df.empty:
+        # Calculate the CVF curve
+        df['cumulative_percentage'] = df['cumulative_volume'] / df['total_volume']
+        df['log_volume'] = np.log10(df['trade_volume'])
+
+        # Plot the CVF curve for this pair
+        st.line_chart(
+            df[['log_volume', 'cumulative_percentage']].set_index('log_volume'),
+            use_container_width=True
+        )
+    else:
+        st.warning(f"No data found for pair {pair}.")
+#st.write("Data loaded:", df.shape)
+#st.dataframe(df.head())
 
 #df = load_data()
 # Create a new DataFrame to store the trades for each pair
-trades_by_pair = []
+#trades_by_pair = []
 
 # Group by the unique pairs (buy, sell)
 #for (buy, sell), group in df.groupby(['buy', 'sell']):
@@ -126,35 +161,24 @@ trades_by_pair = []
   #  pair_df['pair'] = f"{buy}-{sell}"  # Add a new column for the pair identifier
   #  trades_by_pair.append(pair_df)  # Append this DataFrame to the list
 
-df['pair'] = df.apply(lambda row: f"{row['buy']}-{row['sell']}", axis=1)
+#df['pair'] = df.apply(lambda row: f"{row['buy']}-{row['sell']}", axis=1)
 
 # Combine all the DataFrames for each pair into a single DataFrame
 #result_df = pd.concat(trades_by_pair, ignore_index=True)
 
 #pairs = result_df['pair'].unique()
 
-pairs = list(df['pair'].unique()) + ['Total']
+#pairs = list(df['pair'].unique()) + ['Total']
 
-if not len(pairs):
+#if not len(pairs):
     
-    st.warning("Select at least one pair")
-
-'''
-Uniswap Data Dashboard
-
-Browse Uniswap data by pair from a large collection of data.
-
-'''
+#    st.warning("Select at least one pair")
     
 
-selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['USDC-ENS', 'USDT-UNI', 'USDT-USDC', 'Total'])
-
-''
-''
-''
+#selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['USDC-ENS', 'USDT-UNI', 'USDT-USDC', 'Total'])
 
 # Remove 'Total' from selected_pairs for filtered_pairs calculation
-selected_pairs_without_total = [pair for pair in selected_pairs if pair != 'Total']
+#selected_pairs_without_total = [pair for pair in selected_pairs if pair != 'Total']
 
 #filtered_pairs = result_df[(result_df['pair'].isin(selected_pairs))]
 
@@ -182,15 +206,15 @@ selected_pairs_without_total = [pair for pair in selected_pairs if pair != 'Tota
 #else:
 #    cvf_data = individual_cvf_data  # Only include individual pairs
 
-if 'Total' in selected_pairs:
-    selected_pairs_without_total = [pair for pair in selected_pairs if pair != 'Total']
-    filtered_pairs = df[df['pair'].isin(selected_pairs_without_total)]
-else:
-    filtered_pairs = df[df['pair'].isin(selected_pairs)]
+#if 'Total' in selected_pairs:
+#    selected_pairs_without_total = [pair for pair in selected_pairs if pair != 'Total']
+#    filtered_pairs = df[df['pair'].isin(selected_pairs_without_total)]
+#else:
+#    filtered_pairs = df[df['pair'].isin(selected_pairs)]
 
-st.write("Filtered pairs after selection:", filtered_pairs.shape)
-st.dataframe(filtered_pairs.head())  # Check the first few rows after filtering
-st.write("Columns in filtered pairs:", filtered_pairs.columns.tolist())
+#st.write("Filtered pairs after selection:", filtered_pairs.shape)
+#st.dataframe(filtered_pairs.head())  # Check the first few rows after filtering
+#st.write("Columns in filtered pairs:", filtered_pairs.columns.tolist())
 #for p in filtst.write("Columns in filtered pairs:", filtered_pairs.columns.tolist())ered_pairs['pair'].unique():
     
     
@@ -198,7 +222,20 @@ st.write("Columns in filtered pairs:", filtered_pairs.columns.tolist())
  
 # Log-scale adjustment for x-axis
 #cvf_data['log_volume'] = np.log10(cvf_data['volume'])
+if 'Total' in selected_pairs:
+    df_total = load_data()
+    if not df_total.empty:
+        df_total['cumulative_percentage'] = df_total['cumulative_volume'] / df_total['total_volume']
+        df_total['log_volume'] = np.log10(df_total['trade_volume'])
+
+        # Plot the total CVF curve
+        st.line_chart(
+            df_total[['log_volume', 'cumulative_percentage']].set_index('log_volume'),
+            use_container_width=True
+        )
+    else:
+        st.warning("No total data available.")
 
 # Plot with Streamlit
-st.line_chart(data=filtered_pairs, x='log_volume', y='cumulative_percentage', color='pair')
+#st.line_chart(data=filtered_pairs, x='log_volume', y='cumulative_percentage', color='pair')
 
