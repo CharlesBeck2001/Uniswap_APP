@@ -161,22 +161,50 @@ for pair in selected_pairs:
             # Append the 'Total' data to the combined DataFrame
             cvf_combined_data = pd.concat([cvf_combined_data, total_df], ignore_index=True)
 
-# Plot all selected CVF curves on the same graph
+
 if not cvf_combined_data.empty:
     st.write("CVF Curves for Selected Pairs:")
 
-    # Pivot the data to have pairs as columns and log_volume as index
-    chart_data = cvf_combined_data.pivot_table(
+    # Sort the data by 'log_volume' to ensure it's ordered
+    cvf_combined_data = cvf_combined_data.sort_values(by='log_volume')
+
+    # Select 1000 evenly spaced points based on 'log_volume'
+    num_points = 1000
+
+    # Generate 1000 evenly spaced indices in the range of the DataFrame
+    indices = np.linspace(0, len(cvf_combined_data) - 1, num_points, dtype=int)
+
+    # Sample the data using the generated indices
+    sampled_data = cvf_combined_data.iloc[indices]
+
+    # Pivot the data to have pairs as columns and 'log_volume' as index
+    chart_data = sampled_data.pivot_table(
         index='log_volume',
         columns='pair',
         values='cumulative_percentage',
         aggfunc='max'  # To handle duplicate log_volume values
     )
 
-    # Plot the combined CVF data
+    # Plot the combined CVF data with 1000 evenly spaced points
     st.line_chart(chart_data, use_container_width=True)
 else:
     st.warning("No data available to plot.")
+# Plot all selected CVF curves on the same graph
+#if not cvf_combined_data.empty:
+#    st.write("CVF Curves for Selected Pairs:")
+
+    # Pivot the data to have pairs as columns and log_volume as index
+#    chart_data = cvf_combined_data.pivot_table(
+#        index='log_volume',
+#        columns='pair',
+#        values='cumulative_percentage',
+#        aggfunc='max'  # To handle duplicate log_volume values
+#    )
+
+    # Plot the combined CVF data
+#    st.line_chart(chart_data, use_container_width=True)
+#else:
+#    st.warning("No data available to plot.")
 #st.write("Data loaded:", df.shape)
 #st.dataframe(df.head())
 
