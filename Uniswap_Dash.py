@@ -57,6 +57,7 @@ def load_data():
             total_sell_volume,
             trade_count,
             (total_buy_volume + total_sell_volume) AS total_volume,
+            LOG10(total_buy_volume + total_sell_volume) AS log_volume,
             SUM(total_buy_volume + total_sell_volume) OVER (ORDER BY (total_buy_volume + total_sell_volume)) AS cumulative_volume
         FROM aggregated_data
     )
@@ -67,10 +68,11 @@ def load_data():
         total_sell_volume,
         trade_count,
         total_volume,
+        log_volume,
         cumulative_volume,
         cumulative_volume / SUM(total_volume) OVER () AS cumulative_percentage
     FROM cumulative_data
-    ORDER BY cumulative_volume
+    ORDER BY log_volume
     LIMIT 50000;
     """
 
