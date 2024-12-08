@@ -16,8 +16,16 @@ st.set_page_config(
     page_title='Uniswap Trades Dashboard'
     )
 
+service_account_info = {
+    "private_key": st.secrets["gcp"]["private_key"],
+    "private_key_id": st.secrets["gcp"]["private_key_id"],
+    "client_email": st.secrets["gcp"]["client_email"],
+    "token_uri": st.secrets["gcp"]["token_uri"],
+    "project_id": st.secrets["gcp"]["project_id"]
+}
+
 # Access the private key from Streamlit secrets
-private_key = st.secrets["gcp"]["private_key"]
+#private_key = st.secrets["gcp"]["private_key"]
 
 # Initialize BigQuery client using the provided private key string
 client = bigquery.Client.from_service_account_info({
