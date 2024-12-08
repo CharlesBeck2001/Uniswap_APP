@@ -2,5 +2,5 @@ matplotlib
 pandas
 streamlit
 pandas
-google.cloud
+google.cloud==3.1.0
 numpy
