@@ -11,6 +11,7 @@ import pandas as pd
 from google.cloud import bigquery
 import numpy as np
 import json
+import time
 
 st.set_page_config(
     page_title='Uniswap Trades Dashboard'
