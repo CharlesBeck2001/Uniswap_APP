@@ -64,7 +64,7 @@ def load_data():
     all_data = []
     
     # Calculate how many chunks we need (total rows / chunk size)
-    total_rows = 5000000  # You can change this to the actual number of rows you expect
+    total_rows = 9000000  # You can change this to the actual number of rows you expect
     num_chunks = total_rows // chunk_size
     
     # Create a progress bar
