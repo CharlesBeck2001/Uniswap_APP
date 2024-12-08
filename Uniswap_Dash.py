@@ -186,8 +186,8 @@ for pair in selected_pairs:
 
 if not cvf_combined_data.empty:
     
-    st.write("Maximum cumulative percentage for each pair:")
-    st.write(cvf_combined_data.groupby('pair')['cumulative_percentage'].max())
+    #st.write("Maximum cumulative percentage for each pair:")
+    #st.write(cvf_combined_data.groupby('pair')['cumulative_percentage'].max())
 
     st.write("CVF Curves for Selected Pairs:")
 
