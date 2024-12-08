@@ -222,7 +222,7 @@ if not cvf_combined_data.empty:
     )
 
     # Plot the combined CVF data with 1000 evenly spaced points for each pair
-    st.line_chart(chart_data, use_container_width=True)
+    st.line_chart(chart_data.set_index('log_volume'), use_container_width=True)
 else:
     st.warning("No data available to plot.")
 # Plot all selected CVF curves on the same graph
