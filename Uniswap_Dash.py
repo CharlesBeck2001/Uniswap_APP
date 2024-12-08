@@ -37,27 +37,74 @@ st.write("BigQuery client initialized successfully.")
 @st.cache_data
 def load_data():
     query = """
-    SELECT *
-    FROM `tristerotrading.uniswap.v3_trades`
-    WHERE buy IN ('USDC', 'USDT')
-       OR sell IN ('USDC', 'USDT')
+    WITH aggregated_data AS (
+        SELECT
+            buy,
+            sell,
+            SUM(quantity_buy) AS total_buy_volume,
+            SUM(quantity_sell) AS total_sell_volume,
+            COUNT(*) AS trade_count
+        FROM `tristerotrading.uniswap.v3_trades`
+        WHERE buy IN ('USDC', 'USDT')
+           OR sell IN ('USDC', 'USDT')
+        GROUP BY buy, sell
+    ),
+    cumulative_data AS (
+        SELECT
+            buy,
+            sell,
+            total_buy_volume,
+            total_sell_volume,
+            trade_count,
+            (total_buy_volume + total_sell_volume) AS total_volume,
+            SUM(total_buy_volume + total_sell_volume) OVER (ORDER BY (total_buy_volume + total_sell_volume)) AS cumulative_volume
+        FROM aggregated_data
+    )
+    SELECT
+        buy,
+        sell,
+        total_buy_volume,
+        total_sell_volume,
+        trade_count,
+        total_volume,
+        cumulative_volume,
+        cumulative_volume / SUM(total_volume) OVER () AS cumulative_percentage
+    FROM cumulative_data
+    ORDER BY cumulative_volume
     LIMIT 50000;
-
     """
 
     query_job = client.query(query)
-
     results = query_job.result()
 
+    # Load the data into a DataFrame
     df = query_job.to_dataframe()
-
-    df['volume'] = df.apply(
-        lambda row: row['quantity_buy'] if 'USDT' in row['buy'] or 'USDC' in row['buy'] else (
-                    row['quantity_sell'] if 'USDT' in row['sell'] or 'USDC' in row['sell'] else 0),
-        axis=1
-    )
-
     return df
+
+
+#def load_data():
+#    query = """
+#    SELECT *
+#    FROM `tristerotrading.uniswap.v3_trades`
+#    WHERE buy IN ('USDC', 'USDT')
+#       OR sell IN ('USDC', 'USDT')
+#    LIMIT 50000;
+
+ #   """
+
+ #   query_job = client.query(query)
+
+ #   results = query_job.result()
+
+ #   df = query_job.to_dataframe()
+
+ #   df['volume'] = df.apply(
+ #       lambda row: row['quantity_buy'] if 'USDT' in row['buy'] or 'USDC' in row['buy'] else (
+ #                   row['quantity_sell'] if 'USDT' in row['sell'] or 'USDC' in row['sell'] else 0),
+ #       axis=1
+ #   )
+
+ #   return df
 
 # Load the data
 df = load_data()
@@ -112,29 +159,36 @@ selected_pairs_without_total = [pair for pair in selected_pairs if pair != 'Tota
 
 #filtered_pairs = result_df[(result_df['pair'].isin(selected_pairs))]
 
-filtered_pairs = df[(df['pair'].isin(selected_pairs_without_total))]
+#filtered_pairs = df[(df['pair'].isin(selected_pairs_without_total))]
 
 # Generate CVF points
-def calculate_cvf(data):
-    data = data.sort_values('volume')
-    data['cumulative_volume'] = data['volume'].cumsum()
-    data['cumulative_percentage'] = (data['cumulative_volume'] / data['cumulative_volume'].iloc[-1])
-    return data[['volume', 'cumulative_percentage', 'pair']]
+#def calculate_cvf(data):
+#    data = data.sort_values('volume')
+#    data['cumulative_volume'] = data['volume'].cumsum()
+#    data['cumulative_percentage'] = (data['cumulative_volume'] / data['cumulative_volume'].iloc[-1])
+#    return data[['volume', 'cumulative_percentage', 'pair']]
 
 #cvf_data = pd.concat([calculate_cvf(filtered_pairs[filtered_pairs['pair'] == pair]) for pair in selected_pairs])
 
-individual_cvf_data = pd.concat(
-    [calculate_cvf(filtered_pairs[filtered_pairs['pair'] == pair]) for pair in selected_pairs_without_total]
-)
+#individual_cvf_data = pd.concat(
+#    [calculate_cvf(filtered_pairs[filtered_pairs['pair'] == pair]) for pair in selected_pairs_without_total]
+#)
 
 # Compute CVF for 'Total' (all pairs) if 'Total' is selected
-if 'Total' in selected_pairs:
+#if 'Total' in selected_pairs:
     # CVF for all data in result_df (no filtering by pair)
-    total_cvf_data = calculate_cvf(df)
-    total_cvf_data['pair'] = 'Total'  # Label the total data
-    cvf_data = pd.concat([individual_cvf_data, total_cvf_data])  # Combine with individual pairs
+#    total_cvf_data = calculate_cvf(df)
+#    total_cvf_data['pair'] = 'Total'  # Label the total data
+#    cvf_data = pd.concat([individual_cvf_data, total_cvf_data])  # Combine with individual pairs
+#else:
+#    cvf_data = individual_cvf_data  # Only include individual pairs
+
+if 'Total' in selected_pairs:
+    selected_pairs_without_total = [pair for pair in selected_pairs if pair != 'Total']
+    filtered_pairs = df[df['pair'].isin(selected_pairs_without_total)]
 else:
-    cvf_data = individual_cvf_data  # Only include individual pairs
+    filtered_pairs = df[df['pair'].isin(selected_pairs)]
+
 
 
 #for p in filtered_pairs['pair'].unique():
@@ -146,5 +200,5 @@ else:
 cvf_data['log_volume'] = np.log10(cvf_data['volume'])
 
 # Plot with Streamlit
-st.line_chart(cvf_data, x='log_volume', y='cumulative_percentage', color='pair')
+st.line_chart(data=filtered_pairs, x='log_volume', y='cumulative_percentage', color='pair')
 
