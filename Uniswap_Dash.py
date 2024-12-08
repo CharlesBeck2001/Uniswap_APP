@@ -5,18 +5,26 @@ Created on Sat Dec  7 12:55:21 2024
 
 @author: charlesbeck
 """
+import os
 import streamlit as st
 import pandas as pd
 from google.cloud import bigquery
 import numpy as np
+import tempfile
 
 st.set_page_config(
     page_title='Uniswap Trades Dashboard'
     )
 
-key_path = '/Users/charlesbeck/Tristero Key/tristerotrading-92ef128610de.json'
+private_key_json = os.getenv("GCP_PRIVATE_KEY")
+#key_path = '/Users/charlesbeck/Tristero Key/tristerotrading-92ef128610de.json'
 
-client = bigquery.Client.from_service_account_json(key_path)
+# Write the private key to a temporary file
+with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+    temp_file.write(private_key_json.encode())  # Write the private key content to the temporary file
+    temp_file_path = temp_file.name  # Get the path to the temporary file
+
+client = bigquery.Client.from_service_account_json(temp_file_path)
 
 query = """
 SELECT *
