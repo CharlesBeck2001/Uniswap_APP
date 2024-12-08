@@ -58,14 +58,16 @@ df['volume'] = df.apply(
 trades_by_pair = []
 
 # Group by the unique pairs (buy, sell)
-for (buy, sell), group in df.groupby(['buy', 'sell']):
+#for (buy, sell), group in df.groupby(['buy', 'sell']):
     # For each pair, we store the trades in a dictionary or DataFrame
-    pair_df = group.copy()  # Copy the subset corresponding to the pair
-    pair_df['pair'] = f"{buy}-{sell}"  # Add a new column for the pair identifier
-    trades_by_pair.append(pair_df)  # Append this DataFrame to the list
+ #   pair_df = group.copy()  # Copy the subset corresponding to the pair
+  #  pair_df['pair'] = f"{buy}-{sell}"  # Add a new column for the pair identifier
+  #  trades_by_pair.append(pair_df)  # Append this DataFrame to the list
+
+df['pair'] = df.apply(lambda row: f"{row['buy']}-{row['sell']}", axis=1)
 
 # Combine all the DataFrames for each pair into a single DataFrame
-result_df = pd.concat(trades_by_pair, ignore_index=True)
+#result_df = pd.concat(trades_by_pair, ignore_index=True)
 
 #pairs = result_df['pair'].unique()
 
@@ -94,7 +96,7 @@ selected_pairs_without_total = [pair for pair in selected_pairs if pair != 'Tota
 
 #filtered_pairs = result_df[(result_df['pair'].isin(selected_pairs))]
 
-filtered_pairs = result_df[(result_df['pair'].isin(selected_pairs_without_total))]
+filtered_pairs = df[(df['pair'].isin(selected_pairs_without_total))]
 
 # Generate CVF points
 def calculate_cvf(data):
@@ -112,7 +114,7 @@ individual_cvf_data = pd.concat(
 # Compute CVF for 'Total' (all pairs) if 'Total' is selected
 if 'Total' in selected_pairs:
     # CVF for all data in result_df (no filtering by pair)
-    total_cvf_data = calculate_cvf(result_df)
+    total_cvf_data = calculate_cvf(df)
     total_cvf_data['pair'] = 'Total'  # Label the total data
     cvf_data = pd.concat([individual_cvf_data, total_cvf_data])  # Combine with individual pairs
 else:
