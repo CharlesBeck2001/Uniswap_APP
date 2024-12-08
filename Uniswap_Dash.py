@@ -112,11 +112,8 @@ def load_data():
 df = load_data()
 data = df
 
-if not data.empty:
-    st.write("Data loading complete!")
-    st.dataframe(data.head())  # Show the first few rows
-else:
-    st.warning("No data to display.")
+st.write("Data loaded:", df.shape)  # Outputs the dimensions of the DataFrame
+st.dataframe(df.head())
 
 #df = load_data()
 # Create a new DataFrame to store the trades for each pair
