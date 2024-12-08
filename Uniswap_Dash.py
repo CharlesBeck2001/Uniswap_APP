@@ -38,7 +38,8 @@ query = """
 SELECT *
 FROM `tristerotrading.uniswap.v3_trades`
 WHERE buy IN ('USDC', 'USDT')
-   OR sell IN ('USDC', 'USDT');
+   OR sell IN ('USDC', 'USDT')
+LIMIT 500000;
 
 """
 
