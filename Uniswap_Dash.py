@@ -22,8 +22,10 @@ private_key = st.secrets["gcp"]["private_key"]
 # Convert private key string to dictionary
 private_key_dict = json.loads(private_key)
 
-# Initialize BigQuery client using the provided private key
-client = bigquery.Client.from_service_account_info(private_key_dict)
+# Initialize BigQuery client using the provided private key string
+client = bigquery.Client.from_service_account_info({
+    "private_key": private_key
+})
 
 # Continue with your code as usual
 st.write("BigQuery client initialized successfully.")
