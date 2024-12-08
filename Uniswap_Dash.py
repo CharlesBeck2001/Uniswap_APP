@@ -10,7 +10,7 @@ import streamlit as st
 import pandas as pd
 from google.cloud import bigquery
 import numpy as np
-import tempfile
+import json
 
 st.set_page_config(
     page_title='Uniswap Trades Dashboard'
@@ -19,12 +19,18 @@ st.set_page_config(
 private_key_json = os.getenv("GCP_PRIVATE_KEY")
 #key_path = '/Users/charlesbeck/Tristero Key/tristerotrading-92ef128610de.json'
 
-# Write the private key to a temporary file
-with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-    temp_file.write(private_key_json.encode())  # Write the private key content to the temporary file
-    temp_file_path = temp_file.name  # Get the path to the temporary file
+if private_key_json is None:
+    st.error("Private key is not available in the environment variables")
+else:
+    # Parse the JSON string into a dictionary
+    private_key_dict = json.loads(private_key_json)
 
-client = bigquery.Client.from_service_account_json(temp_file_path)
+    # Initialize BigQuery client using the provided private key
+    client = bigquery.Client.from_service_account_info(private_key_dict)
+
+    # Continue with your code as usual
+    st.write("BigQuery client initialized successfully.")
+
 
 query = """
 SELECT *
