@@ -28,9 +28,7 @@ service_account_info = {
 #private_key = st.secrets["gcp"]["private_key"]
 
 # Initialize BigQuery client using the provided private key string
-client = bigquery.Client.from_service_account_info({
-    "private_key": private_key
-})
+client = bigquery.Client.from_service_account_info(service_account_info)
 
 # Continue with your code as usual
 st.write("BigQuery client initialized successfully.")
