@@ -145,7 +145,7 @@ Browse Uniswap data by pair from a large collection of data.
 
 '''
 
-selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['USDC-ENS', 'USDT-UNI', 'USDT-USDC', 'Total'])
+selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['USDC-ENS', 'USDT-UNI', 'USDT-USDC'])
 
 ''
 ''
