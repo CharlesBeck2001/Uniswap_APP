@@ -265,9 +265,10 @@ for pair in selected_pairs:
     if pair == 'Total':
 
         Total_Volume = float(np.pow(loaded_df['log_volume'][9999],10))
+        formatted_total_volume = f"${Total_Volume:,.2f}"
         st.metric(
             label = f'Total Volume of All Trades',
-            value = Total_Volume
+            value = formatted_total_volume
         )
         
 # Plot all selected CVF curves on the same graph
