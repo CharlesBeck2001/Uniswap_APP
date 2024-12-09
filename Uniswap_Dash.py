@@ -138,6 +138,7 @@ def load_data(pair=None):
 #df = load_data()
 #data = df
 pairs = load_unique_pairs()
+pairs.append('Total')
 '''
 Uniswap Data Dashboard
 
@@ -145,7 +146,7 @@ Browse Uniswap data by pair from a large collection of data.
 
 '''
 
-selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['USDC-ENS', 'USDT-UNI', 'USDT-USDC'])
+selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['USDC-ENS', 'USDT-UNI', 'USDT-USDC', 'Total'])
 
 ''
 ''
@@ -153,6 +154,7 @@ selected_pairs = st.multiselect('Which pairs would you like to view?', pairs, ['
 
 cvf_combined_data = pd.DataFrame()
 
+file_path = "bquxjob_1398a98e_1939337331a.csv"
 # Fetch and combine data for the selected pairs
 for pair in selected_pairs:
     if pair != 'Total':  # Exclude 'Total' from the loop
@@ -169,19 +171,20 @@ for pair in selected_pairs:
             cvf_combined_data = pd.concat([cvf_combined_data, df], ignore_index=True)
     else:
         # If 'Total' is selected, calculate the CVF for all pairs combined
-        total_df = load_data()  # Load all data for the total volume
-        if not total_df.empty:
-            # Calculate the CVF curve for 'Total'
-            total_df['cumulative_percentage'] = total_df['cumulative_volume'] / total_df['total_volume']
-            total_df['log_volume'] = np.log10(total_df['trade_volume'])
+        loaded_df = pd.read_csv(file_path)
 
-            # Add a new column to label the pair as 'Total'
-            total_df['pair'] = 'Total'
+        aligned_df = pd.DataFrame({
+            'buy': np.nan,  # Assume 'buy' is not available in the CSV
+            'sell': np.nan,  # Assume 'sell' is not available in the CSV
+            'trade_volume': np.nan,  # Set default values for missing columns
+            'cumulative_volume': np.nan,
+            'total_volume': np.nan,
+            'cumulative_percentage': loaded_df['percentage_of_total_volume'],  # Use existing data
+            'log_volume': loaded_df['log_volume'],  # Use the existing log_volume from the CSV
+            'pair': 'Total'  # Label all rows as 'Total'
+        })
 
-            # Append the 'Total' data to the combined DataFrame
-            cvf_combined_data = pd.concat([cvf_combined_data, total_df], ignore_index=True)
-
-
+        cvf_combined_data = pd.concat([cvf_combined_data, aligned_df], ignore_index=True)
 
 
 if not cvf_combined_data.empty:
