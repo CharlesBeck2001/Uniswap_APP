@@ -173,6 +173,8 @@ for pair in selected_pairs:
         # If 'Total' is selected, calculate the CVF for all pairs combined
         loaded_df = pd.read_csv(file_path)
 
+        loaded_df = loaded_df[loaded_df['log_volume'] >= 0]
+
         aligned_df = pd.DataFrame({
             'buy': np.nan,  # Assume 'buy' is not available in the CSV
             'sell': np.nan,  # Assume 'sell' is not available in the CSV
