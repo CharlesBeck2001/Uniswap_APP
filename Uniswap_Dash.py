@@ -251,6 +251,20 @@ if not cvf_combined_data.empty:
     st.line_chart(sampled_combined_data, x='log_volume', y='cumulative_percentage', color='pair')
 else:
     st.warning("No data available to plot.")
+
+total_volume_summary = (
+        cvf_combined_data.groupby('pair')['total_volume']
+        .sum()
+        .reset_index()
+        .rename(columns={'total_volume': 'Total Volume'})
+    )
+
+    # Display the dashboard with total volumes
+st.write("### Total Volume for Each Pair")
+st.dataframe(total_volume_summary)
+
+    # Optional: Add a bar chart to visualize total volume
+st.bar_chart(total_volume_summary, x='pair', y='Total Volume')
 # Plot all selected CVF curves on the same graph
 #if not cvf_combined_data.empty:
 #    st.write("CVF Curves for Selected Pairs:")
