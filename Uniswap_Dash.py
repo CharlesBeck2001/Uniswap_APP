@@ -194,6 +194,8 @@ if not cvf_combined_data.empty:
 
     st.header("Cumulative Volume Curves for Select Pairs on Uniswap")
 
+    ''
+    
     # Initialize an empty list to hold the sampled data for each pair
     sampled_dfs = []
 
@@ -253,6 +255,21 @@ if not cvf_combined_data.empty:
 else:
     st.warning("No data available to plot.")
 
+
+''
+''
+st.header('Total Volume For Each Pair')
+
+for pair in selected_pairs:
+
+    if pair == 'Total':
+
+        Total_Volume = float(np.pow(loaded_df['log_volume'][9999],10))
+        st.metric(
+            label = 'Total Volume of All Trades'
+            value = Total_Volume
+        )
+        
 # Plot all selected CVF curves on the same graph
 #if not cvf_combined_data.empty:
 #    st.write("CVF Curves for Selected Pairs:")
