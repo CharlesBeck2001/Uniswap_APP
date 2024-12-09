@@ -270,6 +270,15 @@ for pair in selected_pairs:
             label = f'Total Volume of All Trades',
             value = formatted_total_volume
         )
+
+    else:
+
+        Pair_Volume = sum(np.array(cvf_combined_data[cvf_combined_data['pair'] == pair]['trade_volume'].tolist()))
+        formatted_pair_volume = f"${Pair_Volume:,.2f}"
+        st.metric(
+            label = f'Total Volume From Pair {pair}',
+            value = formatted_pair_volume
+        )
         
 # Plot all selected CVF curves on the same graph
 #if not cvf_combined_data.empty:
