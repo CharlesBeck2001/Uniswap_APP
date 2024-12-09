@@ -276,7 +276,7 @@ for pair in selected_pairs:
         Pair_Volume = sum(np.array(cvf_combined_data[cvf_combined_data['pair'] == pair]['trade_volume'].tolist()))
         formatted_pair_volume = f"${Pair_Volume:,.2f}"
         st.metric(
-            label = f'Total Volume From Pair {pair}',
+            label = f'Total Volume From {pair}',
             value = formatted_pair_volume
         )
         
