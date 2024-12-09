@@ -211,8 +211,8 @@ if not cvf_combined_data.empty:
         pair_data = pair_data.sort_values(by='log_volume')
 
          # Normalize log_volume to start at 0
-        min_log_volume = pair_data['log_volume'].min()
-        pair_data['log_volume'] -= min_log_volume
+        #min_log_volume = pair_data['log_volume'].min()
+        #pair_data['log_volume'] -= min_log_volume
 
         # Ensure there's a point at log_volume = 0
         if 0 not in pair_data['log_volume'].values:
