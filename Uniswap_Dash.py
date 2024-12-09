@@ -266,7 +266,7 @@ for pair in selected_pairs:
 
         Total_Volume = float(np.pow(loaded_df['log_volume'][9999],10))
         st.metric(
-            label = 'Total Volume of All Trades'
+            label = f'Total Volume of All Trades',
             value = Total_Volume
         )
         
