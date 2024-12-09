@@ -264,7 +264,8 @@ for pair in selected_pairs:
 
     if pair == 'Total':
 
-        Total_Volume = float(np.pow(loaded_df['log_volume'][9999],10))
+        #Total_Volume = float(np.pow(loaded_df['log_volume'][9999],10))
+        Total_Volume = 545568000223.98
         formatted_total_volume = f"${Total_Volume:,.2f}"
         st.metric(
             label = f'Total Volume of All Trades',
