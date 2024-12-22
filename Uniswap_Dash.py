@@ -243,7 +243,7 @@ if not cvf_combined_data.empty:
 
     # Combine all the sampled data for each pair into one DataFrame
     sampled_combined_data = pd.concat(sampled_dfs, ignore_index=True)
-
+    st.write(sampled_combined_data)
     # Pivot the data to have 'log_volume' as the index and pairs as columns
     #chart_data = sampled_combined_data.pivot_table(
     #    index='log_volume',
